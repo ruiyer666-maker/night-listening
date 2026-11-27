@@ -1,0 +1,11 @@
+{
+  "name": "night-listening-netease-api",
+  "private": true,
+  "description": "Vesper 用的网易云接口服务（NeteaseCloudMusicApi），和 App 本身的依赖分开放",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "NeteaseCloudMusicApi": "4.32.0"
+  }
+}

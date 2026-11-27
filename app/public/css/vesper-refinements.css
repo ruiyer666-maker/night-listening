@@ -1,0 +1,29 @@
+/* Vesper web flows: one account provider, clear recovery actions. */
+#login-modal.vesper-qr-login .dual-login-modal { width: min(440px, calc(100vw - 32px)); min-width: 0; max-height: calc(100dvh - 32px); padding: 34px 28px 24px; overflow-y: auto; border: 1px solid #3b3c3e; border-radius: 22px; background: #111518; box-shadow: 0 24px 90px #0009; }
+#login-modal.vesper-qr-login #login-node-graph,
+#login-modal.vesper-qr-login #login-easter-egg-gate,
+#login-modal.vesper-qr-login .login-panel-head > div,
+#login-modal.vesper-qr-login #login-reset-all-btn,
+#login-modal.vesper-qr-login #qq-cookie-toggle-btn,
+#login-modal.vesper-qr-login #qq-cookie-panel,
+#login-modal.vesper-qr-login #qq-web-login-card { display: none !important; }
+#login-modal.vesper-qr-login .login-panel-head { position: absolute; top: 12px; right: 12px; margin: 0; padding: 0; border: 0; }
+#login-modal.vesper-qr-login .login-auth-drawer { display: flex !important; flex-direction: column; align-items: center; max-height: none !important; opacity: 1 !important; transform: none !important; visibility: visible !important; filter: none; transition: none; margin: 0; padding: 0; border: 0; background: none; overflow: visible; }
+#login-modal.vesper-qr-login .login-auth-copy { width: 100%; text-align: center; }
+#login-modal.vesper-qr-login #login-modal-title { margin: 10px 0 10px; font-size: 23px; color: #f2eee5; }
+#login-modal.vesper-qr-login #login-modal-desc { color: #b4b5b4; font-size: 13px; line-height: 1.8; }
+#login-modal.vesper-qr-login #qr-status { min-height: 24px; margin: 16px 0; font-size: 12px; color: #d5c5a8; text-align: center; }
+#login-modal.vesper-qr-login #qr-status.fail { color: #e8ada0; }
+#login-modal.vesper-qr-login .login-auth-body { width: 100%; display: flex; justify-content: center; }
+#login-modal.vesper-qr-login #qr-shell { position: relative; width: 210px; height: 210px; min-width: 0; padding: 10px; border-radius: 15px; background: #fff; box-shadow: none; }
+#login-modal.vesper-qr-login #qr-img { width: 100%; height: 100%; object-fit: contain; border-radius: 5px; }
+#login-modal.vesper-qr-login #qr-img:not([src]) { display: none; }
+#login-modal.vesper-qr-login #qr-shell.is-loading::after { content: ''; position: absolute; inset: calc(50% - 14px); width: 28px; height: 28px; border: 2px solid #ccc; border-top-color: #2e424b; border-radius: 50%; animation: vqr-spin 1s linear infinite; }
+#login-modal.vesper-qr-login .login-auth-actions { width: 100%; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 24px 0 0; }
+#login-modal.vesper-qr-login .modal-btn { min-height: 40px; border-radius: 10px; font-size: 12px; }
+#login-modal.vesper-qr-login .login-panel-close { width: 34px; height: 34px; }
+@keyframes vqr-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #login-modal.vesper-qr-login #qr-shell.is-loading::after { animation: none; } }
+.vh-recovery { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px; }
+.vh-recovery button { border: 1px solid #555b60; border-radius: 18px; background: #171d22; color: #eee7d9; padding: 8px 16px; font: inherit; cursor: pointer; }
+.vh-recovery button:focus-visible { outline: 2px solid #e1c49a; outline-offset: 3px; }

@@ -1,0 +1,30 @@
+/* 歌词意象的开关与触发词提示；不接管舞台鼠标/触控事件。 */
+#vesper-imagery-btn[aria-pressed="true"] {
+  color: #fff;
+  border-color: rgba(255, 255, 255, .38);
+}
+#vesper-imagery-btn[aria-pressed="false"] { opacity: .55; }
+#vesper-imagery-caption {
+  position: fixed;
+  left: max(24px, env(safe-area-inset-left));
+  bottom: 112px;
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: min(440px, calc(100vw - 48px));
+  pointer-events: none;
+  font: 12px/1.5 var(--vesper-font, sans-serif);
+}
+#vesper-imagery-caption[hidden] { display: none; }
+#vesper-imagery-caption span {
+  color: var(--imagery-color, #fff);
+  background: rgba(0, 0, 0, .66);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.empty-home-active #vesper-imagery-caption,
+.splash-active #vesper-imagery-caption { display: none; }
+@media (max-width: 600px) {
+  #vesper-imagery-caption { left: 16px; bottom: 142px; font-size: 11px; gap: 5px; }
+}

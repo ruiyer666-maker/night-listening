@@ -1,0 +1,1086 @@
+/* ==========================================================================
+   Vesper 首页：黑胶 Cover Flow、3D 歌单架、播放背景面板
+   首页交互参考 MIMI Music Player（NanQiaoMi/music_source_code，MIT）
+   ========================================================================== */
+
+:root {
+  --vh-sleeve: 300px;
+  --vh-accent-rgb: 242, 230, 208;
+  --vs-card: 190px;
+}
+
+/* 原项目的首页是一块居中的卡片网格；Vesper 的首页铺满整个窗口 */
+#empty-home#empty-home {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: auto;
+  transform: scale(.985);
+  transition: opacity .6s var(--vesper-ease), transform .7s var(--vesper-ease);
+}
+
+body.empty-home-active #empty-home#empty-home {
+  transform: none;
+}
+
+/* 首页盖在播放舞台上面：把后面的 3D 画面压暗，唱片才是主角；四周再加一圈暗角 */
+body.empty-home-active #canvas-container {
+  opacity: .22;
+  transition: opacity .6s var(--vesper-ease);
+}
+
+.vh-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 75% 65% at 50% 55%, rgba(0, 0, 0, .25), rgba(0, 0, 0, .82));
+  pointer-events: none;
+}
+
+.vh-root > * {
+  position: relative;
+}
+
+.vh-root > .vh-brand {
+  position: absolute;
+}
+
+/* 搜索结果改为放进唱片架，不再弹下拉列表；只接网易云，平台切换标签也不需要了 */
+#search-results,
+#search-mode-tabs {
+  display: none !important;
+}
+
+.vh-root {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(92px, 10.5vh) 0 26px;
+  font-family: var(--vesper-font);
+  color: var(--vesper-text);
+  user-select: none;
+  transition: padding-bottom .45s var(--vesper-ease);
+}
+
+/* 有歌在放时底部是播放条（约 120px 高），首页内容整体让出来 */
+body.controls-visible .vh-root {
+  padding-bottom: 136px;
+}
+
+.vh-brand {
+  position: absolute;
+  top: 26px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #f6efe2;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+.vh-brand svg {
+  width: 20px;
+  height: 20px;
+}
+
+.vh-clock {
+  text-align: center;
+  line-height: 1;
+}
+
+.vh-time {
+  font-size: clamp(52px, 6.6vw, 92px);
+  font-weight: 200;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, .94);
+}
+
+.vh-date {
+  margin-top: 10px;
+  font-size: 13px;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .5);
+}
+
+.vh-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+  max-width: min(920px, 90vw);
+}
+
+.vh-chip {
+  position: relative;
+  height: 32px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .055);
+  color: rgba(255, 255, 255, .66);
+  font: 500 13px/1 var(--vesper-font);
+  cursor: pointer;
+  transition: background .2s, color .2s, transform .2s var(--vesper-ease);
+}
+
+.vh-chip:hover {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+}
+
+.vh-chip:active {
+  transform: scale(.96);
+}
+
+.vh-chip.is-active {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+  font-weight: 600;
+}
+
+.vh-chip.is-transient:not(.is-active) {
+  border-style: dashed;
+}
+
+.vh-chip-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 7px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: currentColor;
+  animation: vh-blink 1s ease-in-out infinite;
+}
+
+@keyframes vh-blink {
+  50% { opacity: .2; }
+}
+
+/* ---------- 舞台和卡片 ---------- */
+
+.vh-stage {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: calc(var(--vh-sleeve) * 1.42);
+  perspective: 1200px;
+  perspective-origin: 50% 42%;
+}
+
+.vh-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: min(980px, 92vw);
+  height: calc(var(--vh-sleeve) * .62);
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--vh-accent-rgb), .24), rgba(var(--vh-accent-rgb), .06) 55%, transparent 100%);
+  filter: blur(30px);
+  opacity: .9;
+  transition: background 1.2s ease;
+  pointer-events: none;
+}
+
+.vh-track {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.vh-card {
+  position: absolute;
+  left: calc(var(--vh-sleeve) * -.5);
+  top: calc(var(--vh-sleeve) * -.5);
+  width: var(--vh-sleeve);
+  height: var(--vh-sleeve);
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  cursor: pointer;
+}
+
+.vh-card-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* 黑胶唱片：在封套后面，选中时滑出来 */
+.vh-disc {
+  position: absolute;
+  top: 7.6%;
+  left: 7.6%;
+  width: 84.8%;
+  height: 84.8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1a1a1a 0%, #111 25%, #222 26%, #0d0d0d 45%, #1f1f1f 46%, #080808 65%, #1a1a1a 66%, #050505 100%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .9), inset 0 0 0 2px rgba(255, 255, 255, .08);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.vh-disc-spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: vh-spin 22s linear infinite;
+  animation-play-state: paused;
+}
+
+.vh-card.is-center .vh-disc-spin {
+  animation-play-state: running;
+}
+
+.vh-card.is-playing .vh-disc-spin {
+  animation-duration: 3.4s;
+}
+
+@keyframes vh-spin {
+  to { transform: rotate(360deg); }
+}
+
+.vh-disc-grooves {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, transparent 0, transparent 4px, rgba(255, 255, 255, .045) 4.5px, transparent 5px);
+  opacity: .55;
+}
+
+.vh-disc-label {
+  position: relative;
+  width: 37%;
+  height: 37%;
+  border-radius: 50%;
+  background: #2a2a2e center / cover no-repeat;
+  border: 3px solid #222226;
+  box-shadow: 0 0 12px rgba(0, 0, 0, .8), inset 0 0 0 1.5px rgba(255, 255, 255, .2);
+}
+
+.vh-disc-hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 13%;
+  height: 13%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, .3);
+}
+
+/* 高光不跟着唱片转，像灯打在唱片上 */
+.vh-disc-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, transparent 0deg, rgba(255, 255, 255, .22) 50deg, transparent 105deg, transparent 180deg, rgba(255, 255, 255, .16) 230deg, transparent 290deg);
+  mix-blend-mode: screen;
+}
+
+/* 封套 */
+.vh-sleeve {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #161618;
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .75);
+  transform: translateZ(1px);
+  transition: box-shadow .3s;
+}
+
+.vh-card.is-center:hover .vh-sleeve {
+  box-shadow: 0 36px 90px rgba(0, 0, 0, .9);
+}
+
+.vh-sleeve-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+
+.vh-sleeve-blank {
+  background: linear-gradient(135deg, #222, #0c0c0c);
+}
+
+.vh-sleeve-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .08), transparent);
+  z-index: 3;
+}
+
+.vh-sleeve-mouth {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(270deg, rgba(0, 0, 0, .85), transparent);
+  z-index: 3;
+}
+
+.vh-sleeve-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, .55);
+  transition: opacity .3s;
+}
+
+.vh-sleeve-shade p {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .55);
+}
+
+.vh-card.is-center .vh-sleeve-shade {
+  opacity: 0;
+}
+
+.vh-sleeve-face {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 22px;
+  background: linear-gradient(to top, rgba(0, 0, 0, .88), rgba(0, 0, 0, .2) 45%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s var(--vesper-ease);
+}
+
+.vh-card.is-center .vh-sleeve-face {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vh-face-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vh-stage-btn {
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  background: rgba(0, 0, 0, .35);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, .9);
+  font: 500 11.5px/1 var(--vesper-font);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+
+.vh-stage-btn:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+.vh-stage-btn:active {
+  transform: scale(.95);
+}
+
+.vh-eq {
+  display: none;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .4);
+  box-sizing: content-box;
+}
+
+.vh-card.is-playing .vh-eq {
+  display: flex;
+}
+
+.vh-eq i {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(var(--vh-accent-rgb));
+  transform-origin: bottom;
+  animation: vh-eq .9s ease-in-out infinite;
+}
+
+.vh-eq i:nth-child(2) { animation-duration: 1.2s; animation-delay: -.3s; }
+.vh-eq i:nth-child(3) { animation-duration: .7s; animation-delay: -.5s; }
+
+@keyframes vh-eq {
+  0%, 100% { transform: scaleY(.3); }
+  50% { transform: scaleY(1); }
+}
+
+.vh-face-play {
+  align-self: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, .2);
+  border: 1px solid rgba(255, 255, 255, .25);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: scale(.92);
+  transition: opacity .3s, transform .3s var(--vesper-ease);
+}
+
+.vh-card.is-center:hover .vh-face-play,
+.vh-card.is-center:focus-within .vh-face-play,
+.vh-face-play:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.vh-face-play:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.vh-face-play svg {
+  width: 26px;
+  height: 26px;
+  fill: #fff;
+}
+
+.vh-face-play .i-play { margin-left: 3px; }
+.vh-face-play .i-pause,
+.vh-card.is-playing .vh-face-play .i-play { display: none; }
+.vh-card.is-playing .vh-face-play .i-pause { display: block; }
+
+.vh-face-meta h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vh-face-meta p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .62);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vh-vip {
+  flex: none;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #f2e6d0;
+  color: #000;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+/* 地板倒影：只给中间那张 */
+.vh-reflect {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(100% + 8px);
+  height: calc(var(--vh-sleeve) * .16);
+  border-radius: 18px;
+  overflow: hidden;
+  transform: scaleY(-1);
+  opacity: 0;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, .8), transparent 80%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, .8), transparent 80%);
+  pointer-events: none;
+  transition: opacity .4s;
+}
+
+.vh-reflect img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--vh-sleeve);
+  object-fit: cover;
+}
+
+.vh-card.is-center .vh-reflect {
+  opacity: .32;
+}
+
+.vh-status {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, .55);
+  white-space: nowrap;
+}
+
+.vh-stage:not(.is-empty) .vh-status {
+  top: auto;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: 12px;
+}
+
+.vh-status.is-error {
+  color: #ff9a8a;
+}
+
+/* ---------- 标题、底部 ---------- */
+
+.vh-caption {
+  min-height: 46px;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.vh-cap-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  max-width: 70vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vh-cap-sub {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .5);
+}
+
+.vh-cap-count {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, .32);
+}
+
+.vh-foot {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.vh-shelf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 34px;
+  padding: 0 8px 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  background: rgba(255, 255, 255, .06);
+  backdrop-filter: blur(18px);
+  color: rgba(255, 255, 255, .86);
+  font: 500 12.5px/1 var(--vesper-font);
+  cursor: pointer;
+  transition: background .2s, transform .25s var(--vesper-ease);
+}
+
+.vh-shelf-btn:hover {
+  background: rgba(255, 255, 255, .13);
+  transform: translateY(-2px);
+}
+
+.vh-shelf-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.vh-shelf-count {
+  color: rgba(255, 255, 255, .45);
+}
+
+.vh-shelf-btn kbd {
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .1);
+  color: rgba(255, 255, 255, .55);
+  font: 500 10px/1 'JetBrains Mono', monospace;
+}
+
+.vh-hint {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  color: rgba(255, 255, 255, .3);
+}
+
+body.controls-visible .vh-hint {
+  display: none;
+}
+
+/* Keep the compact desktop rules after the base clock/stage/footer rules.
+   Projector-height windows must leave the title and shelf action above playback. */
+@media (min-width: 641px) and (max-height: 860px) {
+  .vh-root { padding-top: 78px; }
+  .vh-time { font-size: clamp(44px, 5.4vw, 68px); }
+  .vh-date { margin-top: 7px; }
+  .vh-chips { margin-top: 14px; }
+  .vh-stage { min-height: calc(var(--vh-sleeve) * 1.22); }
+  .vh-track { top: 50%; transform: scale(.94); }
+  .vh-foot { margin-top: 8px; }
+}
+
+/* ==========================================================================
+   3D 歌单架（想法来自 MIMI 的 Shelf3DView，这里用 CSS 3D 实现）
+   ========================================================================== */
+
+.vesper-shelf {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  font-family: var(--vesper-font);
+  color: #fff;
+  background: radial-gradient(ellipse 80% 60% at 50% 62%, rgba(26, 26, 30, .9), rgba(0, 0, 0, .97));
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .38s var(--vesper-ease);
+  user-select: none;
+}
+
+.vesper-shelf.is-open {
+  opacity: 1;
+}
+
+.vs-head {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.vs-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .07);
+}
+
+.vs-tab {
+  height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, .62);
+  font: 500 13px/1 var(--vesper-font);
+  cursor: pointer;
+}
+
+.vs-tab:hover {
+  color: #fff;
+}
+
+.vs-tab.is-active {
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+}
+
+.vs-close {
+  position: absolute;
+  right: 26px;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.vs-close svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.vs-stage {
+  position: absolute;
+  inset: 0;
+  perspective: 1000px;
+  /* 视点放高一点，像站着俯看一圈立在地上的唱片，弧度才看得出来 */
+  perspective-origin: 50% 8%;
+  cursor: grab;
+}
+
+.vs-stage:active {
+  cursor: grabbing;
+}
+
+.vs-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(46% + var(--vs-card) * .5 + 4px);
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .045), transparent 60%);
+  border-top: 1px solid rgba(255, 255, 255, .06);
+}
+
+.vs-ring {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.vs-card {
+  position: absolute;
+  left: calc(var(--vs-card) * -.5);
+  top: calc(var(--vs-card) * -.5);
+  width: var(--vs-card);
+  height: var(--vs-card);
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: #18181b;
+  backface-visibility: hidden;
+  cursor: pointer;
+  -webkit-box-reflect: below 6px linear-gradient(transparent 62%, rgba(0, 0, 0, .3));
+  transition: box-shadow .3s, filter .3s;
+  filter: brightness(.62);
+}
+
+.vs-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.vs-card-name {
+  display: none;
+}
+
+.vs-card.is-front {
+  filter: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 30px 70px rgba(0, 0, 0, .8);
+}
+
+.vs-empty {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, .6);
+  font-size: 14px;
+}
+
+.vs-login,
+.vs-pick {
+  margin-top: 14px;
+  height: 36px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font: 600 13px/1 var(--vesper-font);
+  cursor: pointer;
+  transition: transform .2s var(--vesper-ease);
+}
+
+.vs-login:hover,
+.vs-pick:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.vs-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8vh;
+  text-align: center;
+  pointer-events: none;
+}
+
+.vs-caption h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.vs-caption p {
+  margin: 6px auto 0;
+  max-width: 640px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-caption .vs-pick {
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   播放背景面板（Wallpaper Engine 壁纸）
+   ========================================================================== */
+
+.vesper-wallpaper {
+  position: fixed;
+  z-index: 70;
+  top: 78px;
+  right: 24px;
+  width: 420px;
+  max-height: calc(100vh - 190px);
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(12, 12, 14, .95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .7);
+  font-family: var(--vesper-font);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-8px) scale(.98);
+  transform-origin: top right;
+  transition: opacity .3s var(--vesper-ease), transform .3s var(--vesper-ease);
+}
+
+.vesper-wallpaper.is-open {
+  opacity: 1;
+  transform: none;
+}
+
+.vw-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.vw-head > div {
+  flex: 1;
+}
+
+.vw-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.vw-head p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .5);
+}
+
+.vw-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  cursor: pointer;
+}
+
+.vw-icon:hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+.vw-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vw-filters {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 12px;
+}
+
+.vw-filters button {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: transparent;
+  color: rgba(255, 255, 255, .62);
+  font: 500 12px/1 var(--vesper-font);
+  cursor: pointer;
+}
+
+.vw-filters button.is-active {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.vw-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.vw-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vw-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1b1b1e;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color .2s;
+}
+
+.vw-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s var(--vesper-ease);
+}
+
+.vw-item:hover .vw-thumb img {
+  transform: scale(1.04);
+}
+
+.vw-thumb em {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, .6);
+  font-size: 10.5px;
+  font-style: normal;
+  color: rgba(255, 255, 255, .85);
+}
+
+.vw-none .vw-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, .12);
+  font-size: 13px;
+  color: rgba(255, 255, 255, .6);
+}
+
+.vw-item.is-active .vw-thumb {
+  outline-color: #fff;
+}
+
+.vw-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vw-note {
+  grid-column: 1 / -1;
+  margin: 20px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, .55);
+}
+
+.vw-foot {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .36);
+}

@@ -1,0 +1,15 @@
+{
+  "name": "vesper",
+  "productName": "Vesper",
+  "version": "1.0.0",
+  "description": "Vesper 沉浸式网页音乐播放器：黑胶选歌首页 + 粒子歌词舞台。基于 Mineradio（GPL-3.0）二次创作，首页选歌交互参考 MIMI Music Player（MIT）。",
+  "license": "SEE LICENSE IN LICENSES.md",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mpg123-decoder": "^1.0.3"
+  }
+}

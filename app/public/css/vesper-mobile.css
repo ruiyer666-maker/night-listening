@@ -1,0 +1,118 @@
+/* Mobile layouts keep the existing player controls; desktop styles stay intact. */
+#vesper-mobile-more[hidden], #vesper-mobile-quick[hidden], #vesper-mobile-actions[hidden] { display: none !important; }
+
+@media (max-width: 640px) {
+  body.vesper-mobile-ready #top-right { top: max(12px, env(safe-area-inset-top)); right: 16px; gap: 7px; }
+  body.vesper-mobile-ready #top-right > .icon-btn { width: 38px; height: 38px; min-width: 38px; }
+  body.vesper-mobile-ready #top-right > .icon-btn svg { width: 18px; height: 18px; }
+  body.vesper-mobile-ready #user-capsule-hide-btn { display: none; }
+  body.vesper-mobile-ready #search-area,
+  body.vesper-mobile-ready #search-area.peek,
+  body.vesper-mobile-ready #search-area.stage-mode.peek {
+    top: calc(max(12px, env(safe-area-inset-top)) + 48px); left: 16px; right: 16px;
+    width: auto; max-width: none; transform: none; gap: 8px;
+  }
+  body.vesper-mobile-ready #search-area #search-stack { width: auto; min-width: 0; flex: 1; }
+  body.vesper-mobile-ready #search-box { height: 42px; padding: 0 14px; border-radius: 14px; }
+  body.vesper-mobile-ready #search-input { width: 100%; min-width: 0; font-size: 16px; letter-spacing: 0; }
+  body.vesper-mobile-ready #search-input::placeholder { color: #a0a2a8; font-size: 12px; }
+  body.vesper-mobile-ready #upload-actions { flex: 0 0 auto; }
+  body.vesper-mobile-ready #upload-actions .icon-btn { width: 42px; height: 42px; }
+  body.vesper-mobile-ready .upload-panel { width: min(300px, calc(100vw - 32px)); right: 0; }
+
+  body.vesper-mobile-ready .vh-root,
+  body.vesper-mobile-ready.controls-visible .vh-root {
+    box-sizing: border-box; padding-top: calc(max(12px, env(safe-area-inset-top)) + 103px);
+    padding-bottom: 20px; gap: 0; transition: none;
+  }
+  body.vesper-mobile-ready.controls-visible .vh-root { padding-bottom: calc(var(--vesper-mobile-bar-height, 116px) + 26px + env(safe-area-inset-bottom)); }
+  body.vesper-mobile-ready .vh-root > .vh-brand { display: flex; top: max(19px, env(safe-area-inset-top)); left: 18px; font-size: 17px; gap: 6px; }
+  body.vesper-mobile-ready .vh-brand svg { width: 17px; height: 17px; }
+  body.vesper-mobile-ready .vh-clock { display: flex; align-items: baseline; justify-content: center; gap: 12px; flex-shrink: 0; }
+  body.vesper-mobile-ready .vh-time { font-size: 30px; font-weight: 300; letter-spacing: -.03em; }
+  body.vesper-mobile-ready .vh-date { font-size: 10px; margin: 0; letter-spacing: 0; }
+  body.vesper-mobile-ready .vh-chips { flex-wrap: nowrap; justify-content: flex-start; width: calc(100% - 32px); max-width: none; overflow-x: auto; scrollbar-width: none; margin-top: 13px; gap: 7px; flex-shrink: 0; padding: 2px 0 5px; }
+  body.vesper-mobile-ready .vh-chips::-webkit-scrollbar { display: none; }
+  body.vesper-mobile-ready .vh-chip { flex-shrink: 0; height: 30px; padding: 0 12px; font-size: 12px; }
+  body.vesper-mobile-ready .vh-stage { min-height: calc(var(--vh-sleeve) * 1.16); }
+  body.vesper-mobile-ready .vh-caption { flex-shrink: 0; min-height: 40px; padding: 0 16px; }
+  body.vesper-mobile-ready .vh-cap-title { font-size: 15px; }
+  body.vesper-mobile-ready .vh-cap-sub { font-size: 11px; margin-top: 4px; }
+  body.vesper-mobile-ready .vh-foot { flex-shrink: 0; margin-top: 8px; gap: 5px; }
+  body.vesper-mobile-ready .vh-hint { display: none; }
+  body.vesper-mobile-ready .vh-shelf-btn { height: 30px; font-size: 11px; }
+  body.vesper-mobile-ready .vh-shelf-btn kbd { display: none; }
+
+  body.vesper-mobile-ready #bottom-bar,
+  body.vesper-mobile-ready #bottom-bar.stage-mode {
+    width: calc(100vw - 24px); left: 50%; bottom: max(12px, env(safe-area-inset-bottom));
+    padding: 8px 12px 9px; gap: 4px; border-radius: 19px;
+  }
+  body.vesper-mobile-ready #bottom-bar.visible { background: rgba(13,16,20,.94); box-shadow: 0 0 0 1px #ffffff16, 0 15px 44px #0009; }
+  body.vesper-mobile-ready #progress-bar { width: 100%; height: 12px; min-height: 12px; margin: 0; overflow: visible; border-radius: 0; background: linear-gradient(to bottom, transparent 4px, #ffffff24 4px, #ffffff24 7px, transparent 7px); }
+  body.vesper-mobile-ready #progress-fill { position: absolute; top: 4px; height: 3px; border-radius: 999px; }
+  body.vesper-mobile-ready #progress-thumb { width: 9px; height: 9px; }
+  body.vesper-mobile-ready #controls { grid-template-columns: minmax(0, 1fr) 42px 34px 34px; grid-template-rows: 48px; gap: 4px; }
+  body.vesper-mobile-ready #controls > .control-cluster.actions,
+  body.vesper-mobile-ready #controls > .control-cluster.transport { display: contents; }
+  body.vesper-mobile-ready #controls > .control-cluster.modes { display: none; }
+  body.vesper-mobile-ready #controls .control-track { display: flex; grid-column: 1; grid-row: 1; gap: 9px; min-width: 0; max-width: none; }
+  body.vesper-mobile-ready #control-cover { display: block; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 11px; }
+  body.vesper-mobile-ready .control-meta { min-width: 0; max-width: none; flex: 1; }
+  body.vesper-mobile-ready .control-title { min-width: 0; font-size: 12px; line-height: 1.5; gap: 4px; }
+  body.vesper-mobile-ready .control-title-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  body.vesper-mobile-ready .control-artist { font-size: 10px; line-height: 1.6; color: #aeb1b9; }
+  body.vesper-mobile-ready .control-title-badges { display: none; }
+  body.vesper-mobile-ready #quality-control { display: none; }
+  body.vesper-mobile-ready #play-btn { grid-column: 2; grid-row: 1; width: 42px; height: 42px; min-width: 42px; }
+  body.vesper-mobile-ready #next-btn { grid-column: 3; grid-row: 1; width: 34px; height: 42px; }
+  body.vesper-mobile-ready #vesper-mobile-more { grid-column: 4; grid-row: 1; display: flex; flex-direction: column; justify-content: center; gap: 0; width: 34px; height: 42px; }
+  #vesper-mobile-more svg { width: 23px; height: 19px; fill: currentColor; }
+  #vesper-mobile-more span { font: 10px/1.4 var(--vesper-font, sans-serif); }
+  #vesper-mobile-quick { display: flex; align-items: center; width: 100%; gap: 6px; min-height: 27px; }
+  #vesper-mobile-stage { flex: 0 0 auto; height: 28px; border: 0; padding: 0 7px; background: transparent; color: #d9cfbd; font: 11px/1 var(--vesper-font,sans-serif); cursor: pointer; }
+  body.vesper-mobile-ready #vesper-lyric-style-btn { height: 28px; min-width: 45px; padding: 0 7px; gap: 5px; }
+  body.vesper-mobile-ready .vls-trigger-glyph { font-size: 15px; }
+  body.vesper-mobile-ready .vls-trigger-label { font-size: 10px; }
+  body.vesper-mobile-ready #time-display { display: flex !important; align-items: center; height: 22px; padding: 0; margin-left: auto; flex: 0 0 auto; min-width: 0; width: auto; font-size: 10px; line-height: 1; color: #aeb1b9; font-variant-numeric: tabular-nums; }
+  #vesper-mobile-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px 8px; align-self: stretch; padding: 9px 0 1px; margin-top: 4px; border-top: 1px solid #ffffff16; }
+  .vm-action { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 0; gap: 1px; }
+  body.vesper-mobile-ready .vm-action > .ctrl-btn,
+  body.vesper-mobile-ready .vm-action > div > .ctrl-btn { display: flex !important; width: 40px; height: 35px; margin: 0; }
+  body.vesper-mobile-ready .vm-action > #volume-control,
+  body.vesper-mobile-ready .vm-action > #lyric-timing-control { display: block !important; width: 40px; height: 35px; }
+  .vm-action-label { font: 10px/1.5 var(--vesper-font,sans-serif); color: #b6bac2; white-space: nowrap; pointer-events: none; }
+  body.vesper-mobile-ready .volume-popover,
+  body.vesper-mobile-ready .lyric-timing-popover { position: fixed; left: 12px; right: 12px; bottom: calc(100% + 10px); width: auto; max-width: none; transform: none !important; }
+  body.vesper-mobile-ready .mini-queue-popover { left: 0; right: 0; width: 100%; bottom: calc(100% + 12px); max-height: min(50vh, 360px); }
+  body.vesper-mobile-ready #vesper-imagery-caption { left: 18px; bottom: calc(var(--vesper-mobile-bar-height, 116px) + 24px + env(safe-area-inset-bottom)); max-width: calc(100vw - 36px); font-size: 10px; gap: 4px; }
+  body.vesper-mobile-ready #vesper-imagery-caption span { padding: 2px 7px; }
+  body.vesper-mobile-ready .vesper-wallpaper { left: 12px; right: 12px; top: 60px; width: auto; max-height: calc(100dvh - 88px); box-sizing: border-box; }
+  body.vesper-mobile-ready .vs-tabs { max-width: calc(100vw - 32px); overflow-x: auto; }
+  body.vesper-mobile-ready #vesper-mobile-more:focus-visible,
+  body.vesper-mobile-ready #vesper-mobile-stage:focus-visible { outline: 2px solid #e6c99c; outline-offset: 2px; border-radius: 8px; }
+
+  body.vesper-mobile-keyboard #bottom-bar { opacity: 0 !important; pointer-events: none !important; transform: translate(-50%, 120%); }
+  body.vesper-mobile-keyboard .vh-root { height: var(--vesper-mobile-viewport, 100dvh); padding-bottom: 12px !important; }
+  body.vesper-mobile-keyboard .vh-clock, body.vesper-mobile-keyboard .vh-foot { display: none; }
+  body.vesper-mobile-keyboard .vh-stage { min-height: 150px; }
+  body.vesper-mobile-keyboard .vh-track { transform: scale(.72); }
+  body.vesper-mobile-keyboard .vh-caption { min-height: 32px; }
+}
+
+@media (max-width: 640px) and (max-height: 720px) {
+  body.vesper-mobile-ready .vh-clock { display: none; }
+  body.vesper-mobile-ready .vh-chips { margin-top: 0; }
+  body.vesper-mobile-ready .vh-stage { min-height: calc(var(--vh-sleeve) * 1.07); }
+  body.vesper-mobile-ready .vh-caption { min-height: 34px; }
+  body.vesper-mobile-ready .vh-foot { margin-top: 4px; }
+  body.vesper-mobile-ready .vh-shelf-btn { height: 27px; }
+  body.vesper-mobile-ready .vh-cap-title { font-size: 13px; }
+  body.vesper-mobile-ready .vh-cap-sub { font-size: 10px; margin-top: 2px; }
+  body.vesper-mobile-ready #vesper-mobile-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding-top: 6px; }
+  body.vesper-mobile-ready .vm-action-label { font-size: 9px; }
+}
+
+@media (max-width: 640px) and (max-height: 640px) {
+  body.vesper-mobile-ready:not(.vesper-mobile-keyboard) .vh-track { transform: scale(.82); }
+}
